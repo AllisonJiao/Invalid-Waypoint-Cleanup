@@ -50,10 +50,41 @@ class WPCUAutomaticRemove(bpy.types.Operator):
 
     def execute(self, context):
         obj = bpy.context.object
-
-        # Get the flight path and control points
-        if obj.type == 'CURVE':
-            curve = obj
+        
+        # Check if the selected object is a curve
+        if obj and obj.type == 'CURVE':
+            curve = obj.data
+            
+            # Check if it's a Bezier or NURBS curve
+            if curve.splines[0].type in {'BEZIER', 'NURBS'}:
+                # Get all control points
+                control_points = curve.splines[0].bezier_points if curve.splines[0].type == 'BEZIER' else curve.splines[0].points
+                
+                # Store invalid points indices
+                invalid_points = []
+                
+                # Examine each control point
+                for i, point in enumerate(control_points):
+                    # Get the point's location
+                    co = point.co
+                    
+                    # TODO: Add your validation logic here
+                    # For example, check if the point is:
+                    # - Too close to other points
+                    # - Outside valid bounds
+                    # - Creating sharp angles
+                    # - etc.
+                    
+                    # For now, we'll just print the point's location
+                    self.report({'INFO'}, f"Point {i}: Location = {co}")
+                
+                # TODO: Remove invalid points from the curve
+                # This will require rebuilding the curve without the invalid points
+                
+            else:
+                self.report({'WARNING'}, "Selected curve must be either Bezier or NURBS type")
+        else:
+            self.report({'WARNING'}, "Please select a curve object")
         
         return {'FINISHED'}
     
@@ -65,7 +96,7 @@ class WPCUManualRemove(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        print(f"Placeholder")
+        self.report({'INFO'}, "Manual remove not implemented yet")
 
         return {'FINISHED'}
 
